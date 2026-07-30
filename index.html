@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="一场可爱的约会邀请互动体验">
+  <title>和法斗去约会</title>
+  <style>
+    :root {
+      --pink: #ff6eaa;
+      --pink-deep: #e44791;
+      --lavender: #c8a2ff;
+      --ink: #5e426d;
+      --muted: #9d829f;
+      --cream: #fffafd;
+      --shadow: 0 22px 55px rgba(150, 86, 150, .18);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Arial Rounded MT Bold", "Trebuchet MS", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255,255,255,.7) 0 2px, transparent 3px),
+        radial-gradient(circle at 88% 18%, rgba(255,255,255,.65) 0 3px, transparent 4px),
+        linear-gradient(135deg, #ffd5e7 0%, #f2c9ed 45%, #d7c6ff 100%);
+      background-size: 130px 130px, 190px 190px, auto;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 4px solid rgba(255, 110, 170, .28); outline-offset: 3px; }
+
+    .page-shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 46px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .decor { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .decor span { position: absolute; color: rgba(255,255,255,.9); text-shadow: 0 3px 8px rgba(194, 100, 175, .18); animation: float 5s ease-in-out infinite; }
+    .decor .heart { font-size: 30px; }
+    .decor .star { font-size: 24px; animation-delay: -1.8s; }
+    .decor .flower { font-size: 26px; animation-delay: -3s; }
+    .d1 { left: 5%; top: 15%; transform: rotate(-18deg); }
+    .d2 { right: 8%; top: 12%; }
+    .d3 { left: 9%; bottom: 12%; }
+    .d4 { right: 5%; bottom: 18%; transform: rotate(16deg); }
+    .d5 { left: 17%; top: 7%; font-size: 17px !important; }
+    .d6 { right: 22%; bottom: 6%; font-size: 19px !important; }
+
+    .app-card {
+      width: min(100%, 650px);
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,.93);
+      border: 3px solid rgba(255, 132, 181, .58);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      padding: clamp(24px, 5vw, 42px);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .app-card::before, .app-card::after { content: "✿"; position: absolute; color: #ffb4d2; font-size: 28px; opacity: .65; }
+    .app-card::before { left: 17px; top: 13px; transform: rotate(-20deg); }
+    .app-card::after { right: 17px; bottom: 13px; transform: rotate(20deg); }
+
+    .progress { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .progress i { width: 8px; height: 8px; background: #f2dce9; border-radius: 50%; transition: .3s ease; }
+    .progress i.active { width: 28px; border-radius: 10px; background: linear-gradient(90deg, var(--pink), var(--lavender)); }
+
+    .screen { display: none; animation: fadeIn .35s ease both; }
+    .screen.active { display: block; }
+    h1 { font-size: clamp(26px, 6vw, 38px); line-height: 1.3; margin: 18px 0 12px; color: #754c78; letter-spacing: .02em; }
+    h2 { font-size: clamp(24px, 5vw, 32px); line-height: 1.35; margin: 12px 0 26px; color: #754c78; }
+    p { font-size: 16px; line-height: 1.75; margin: 0; }
+    .subtle { color: var(--muted); font-size: 14px; }
+
+    .avatar-wrap { width: 148px; height: 148px; margin: 4px auto 18px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(145deg, #ffe7f0, #eedfff); box-shadow: inset 0 0 0 8px rgba(255,255,255,.7), 0 12px 25px rgba(202, 127, 182, .18); }
+    .avatar { width: 116px; height: 116px; }
+    .intro { max-width: 420px; margin: 0 auto; }
+    .actions { display: flex; justify-content: center; gap: 13px; margin: 26px 0 18px; flex-wrap: wrap; }
+    .btn { min-height: 50px; padding: 13px 30px; border-radius: 999px; font-weight: 700; font-size: 16px; transition: transform .12s ease, box-shadow .2s ease, background .2s ease; }
+    .btn:active { transform: scale(.95); }
+    .btn-primary { color: white; background: linear-gradient(135deg, var(--pink), var(--pink-deep)); box-shadow: 0 10px 20px rgba(228, 71, 145, .25); }
+    .btn-primary:hover { box-shadow: 0 13px 25px rgba(228, 71, 145, .34); transform: translateY(-2px); }
+    .btn-secondary { color: #8e8090; background: #f0edf1; }
+    .btn-secondary:hover { background: #e9e3eb; }
+    .avoid-area { position: relative; min-height: 54px; flex: 0 0 118px; }
+    #noBtn { position: absolute; left: 0; top: 0; transition: left .24s ease, top .24s ease; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; margin: 0 auto 24px; max-width: 490px; }
+    .field label { display: block; font-weight: 700; margin: 0 0 8px 4px; font-size: 15px; }
+    .field input, .field select { width: 100%; height: 52px; padding: 0 14px; border: 2px solid #f1d9e8; border-radius: 16px; color: var(--ink); background: #fffafd; }
+    .field input:focus, .field select:focus { border-color: var(--pink); }
+    .full { width: min(100%, 490px); }
+
+    .food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 auto 22px; max-width: 500px; }
+    .food { min-height: 55px; padding: 11px 8px; color: var(--ink); background: #fff5fa; border: 2px solid #f5dbe8; border-radius: 18px; font-weight: 700; transition: .15s ease; }
+    .food:hover { transform: translateY(-2px); border-color: #ff9fc5; }
+    .food.selected { color: #fff; background: linear-gradient(135deg, #ff84b6, #b889f2); border-color: transparent; box-shadow: 0 8px 15px rgba(226, 107, 165, .2); }
+    .food.selected::after { content: " ✓"; }
+    .hint { min-height: 24px; margin-top: 9px; color: var(--muted); font-size: 13px; }
+    .error { color: #d94e7f; font-weight: 700; }
+
+    .summary { max-width: 450px; margin: 22px auto 22px; padding: 22px; background: #fff8fc; border: 2px dashed #f3b6d1; border-radius: 22px; text-align: left; }
+    .summary-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 11px 0; border-bottom: 1px solid #f7deea; font-size: 16px; }
+    .summary-row:last-child { border-bottom: 0; }
+    .summary-row strong { color: #b75d90; white-space: nowrap; }
+    .summary-row span { text-align: right; font-weight: 700; }
+    .ending { color: #b75d90; font-weight: 700; font-size: 16px; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+    @media (max-width: 520px) {
+      .page-shell { padding: 24px 12px; }
+      .app-card { padding: 24px 18px 28px; border-radius: 26px; }
+      .form-grid { grid-template-columns: 1fr; gap: 13px; }
+      .food-grid { grid-template-columns: repeat(2, 1fr); }
+      .actions { gap: 10px; }
+      .btn { padding-left: 24px; padding-right: 24px; }
+      .avoid-area { flex-basis: 105px; }
+      .summary-row { gap: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <div class="decor" aria-hidden="true">
+      <span class="heart d1">♡</span><span class="star d2">✦</span><span class="flower d3">✿</span>
+      <span class="heart d4">♥</span><span class="star d5">✧</span><span class="flower d6">❀</span>
+    </div>
+
+    <section class="app-card" aria-live="polite">
+      <div class="progress" aria-label="流程进度"><i class="active"></i><i></i><i></i><i></i><i></i></div>
+
+      <section class="screen active" id="screen-1">
+        <div class="avatar-wrap" aria-label="一只可爱的法斗头像">
+          <svg class="avatar" viewBox="0 0 160 160" role="img" aria-labelledby="dogTitle">
+            <title id="dogTitle">法斗头像</title>
+            <path fill="#e9b58d" d="M32 62C20 41 24 19 43 28c9-18 30-12 37 2 12-15 35-20 38 2 22-8 28 17 12 34 5 38-16 67-49 67S25 105 32 62Z"/>
+            <path fill="#f8d2ab" d="M42 62c3-25 27-33 38-17 10-16 36-7 39 17 5 39-17 57-39 57S37 101 42 62Z"/>
+            <path fill="#58404c" d="M38 48c-7-13-2-23 9-21l9 16-9 14Zm77-5 8-16c11-2 15 10 8 22l-7 8Z"/>
+            <ellipse fill="#64464c" cx="64" cy="76" rx="8" ry="10"/><ellipse fill="#64464c" cx="98" cy="76" rx="8" ry="10"/>
+            <circle fill="#fff" cx="66" cy="73" r="2.5"/><circle fill="#fff" cx="100" cy="73" r="2.5"/>
+            <path fill="#9b6b70" d="M68 91c5-8 19-8 24 0l-4 11H72Z"/><path fill="none" stroke="#64464c" stroke-width="4" stroke-linecap="round" d="M80 101c-5 8-12 8-17 3m17-3c5 8 12 8 17 3"/>
+            <path fill="#ff7bad" d="M61 113h39v12H61z"/><path fill="#fff" d="m70 113 5 12h9l5-12Z"/>
+          </svg>
+        </div>
+        <h1>可以和我一起约会吗?!</h1>
+        <p class="intro">我偷偷准备了一点小惊喜，想和你一起度过一段开心的时间。</p>
+        <div class="actions">
+          <button class="btn btn-primary" id="yesBtn" type="button">愿意</button>
+          <div class="avoid-area" id="avoidArea"><button class="btn btn-secondary" id="noBtn" type="button">不要</button></div>
+        </div>
+        <p class="subtle">系统检测到，对方已经紧张到开始写问号了。</p>
+      </section>
+
+      <section class="screen" id="screen-2">
+        <div class="avatar-wrap"><span style="font-size:78px" aria-hidden="true">😳</span></div>
+        <h2>等下，你真的点了愿意??<br>我都已经预备好被你点“不要”了。</h2>
+        <button class="btn btn-primary full" id="nextBtn" type="button">好耶好耶！</button>
+      </section>
+
+      <section class="screen" id="screen-3">
+        <h2>所以..你什么时候有空?</h2>
+        <div class="form-grid">
+          <div class="field"><label for="dateInput">日期</label><input id="dateInput" type="date"></div>
+          <div class="field"><label for="timeInput">时间</label><select id="timeInput"><option value="">请选择时间</option><option>12:00</option><option>13:00</option><option>14:00</option><option>15:00</option><option>16:00</option><option>17:00</option><option>18:00</option></select></div>
+        </div>
+        <p class="hint" id="dateHint"></p>
+        <button class="btn btn-primary full" id="confirmTime" type="button">确定时间</button>
+      </section>
+
+      <section class="screen" id="screen-4">
+        <h2>我们吃点什么?</h2>
+        <p class="subtle" style="margin-bottom:18px">可以多选，我会认真记下你的喜好 ♡</p>
+        <div class="food-grid" id="foodGrid">
+          <button class="food" type="button" data-food="披萨" aria-pressed="false">🍕 披萨</button><button class="food" type="button" data-food="寿司" aria-pressed="false">🍣 寿司</button><button class="food" type="button" data-food="火锅" aria-pressed="false">🍲 火锅</button>
+          <button class="food" type="button" data-food="烤肉" aria-pressed="false">🥩 烤肉</button><button class="food" type="button" data-food="早茶" aria-pressed="false">🫖 早茶</button><button class="food" type="button" data-food="拉面" aria-pressed="false">🍜 拉面</button>
+          <button class="food" type="button" data-food="麻辣烫" aria-pressed="false">🌶️ 麻辣烫</button><button class="food" type="button" data-food="小龙虾" aria-pressed="false">🦞 小龙虾</button><button class="food" type="button" data-food="烧烤" aria-pressed="false">🍢 烧烤</button>
+          <button class="food" type="button" data-food="其他" aria-pressed="false">✨ 其他</button>
+        </div>
+        <p class="hint" id="foodHint">至少选一样，就可以出发啦。</p>
+      </section>
+
+      <section class="screen" id="screen-5">
+        <div class="avatar-wrap"><span style="font-size:78px" aria-hidden="true">🐶</span></div>
+        <h2>真开心你没有拒绝我<br>我会准时来接你!</h2>
+        <div class="summary" aria-label="约会确认信息">
+          <div class="summary-row"><strong>日期</strong><span id="summaryDate">—</span></div>
+          <div class="summary-row"><strong>时间</strong><span id="summaryTime">—</span></div>
+          <div class="summary-row"><strong>餐饮</strong><span id="summaryFood">—</span></div>
+        </div>
+        <p class="ending">带好胃口，我带好路线。</p>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const screens = Array.from(document.querySelectorAll('.screen'));
+      const dots = Array.from(document.querySelectorAll('.progress i'));
+      const state = { date: '', time: '', foods: [] };
+      const today = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const todayString = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
+      const dateInput = document.getElementById('dateInput');
+      dateInput.min = todayString;
+      dateInput.value = todayString;
+
+      function showStep(number) {
+        screens.forEach((screen, index) => screen.classList.toggle('active', index === number - 1));
+        dots.forEach((dot, index) => dot.classList.toggle('active', index === number - 1));
+      }
+
+      document.getElementById('yesBtn').addEventListener('click', () => showStep(2));
+      document.getElementById('nextBtn').addEventListener('click', () => showStep(3));
+
+      const avoidArea = document.getElementById('avoidArea');
+      const noBtn = document.getElementById('noBtn');
+      function dodge() {
+        const maxX = Math.max(0, avoidArea.clientWidth - noBtn.offsetWidth);
+        const maxY = Math.max(0, avoidArea.clientHeight - noBtn.offsetHeight);
+        noBtn.style.left = Math.round(Math.random() * maxX) + 'px';
+        noBtn.style.top = Math.round(Math.random() * maxY) + 'px';
+      }
+      ['mouseenter', 'touchstart', 'focus'].forEach(eventName => noBtn.addEventListener(eventName, dodge, { passive: eventName === 'touchstart' }));
+      noBtn.addEventListener('click', dodge);
+
+      document.getElementById('confirmTime').addEventListener('click', () => {
+        const hint = document.getElementById('dateHint');
+        if (!dateInput.value || !document.getElementById('timeInput').value) {
+          hint.textContent = '请把日期和时间都选好哦 ♡';
+          hint.classList.add('error');
+          return;
+        }
+        state.date = dateInput.value;
+        state.time = document.getElementById('timeInput').value;
+        hint.textContent = '';
+        hint.classList.remove('error');
+        showStep(4);
+      });
+
+      document.querySelectorAll('.food').forEach(button => button.addEventListener('click', () => {
+        const food = button.dataset.food;
+        button.classList.toggle('selected');
+        const selected = button.classList.contains('selected');
+        button.setAttribute('aria-pressed', String(selected));
+        state.foods = Array.from(document.querySelectorAll('.food.selected')).map(item => item.dataset.food);
+        document.getElementById('foodHint').textContent = state.foods.length ? '选好了！正在为你准备确认卡片…' : '至少选一样，就可以出发啦。';
+        if (state.foods.length) {
+          document.getElementById('summaryDate').textContent = state.date;
+          document.getElementById('summaryTime').textContent = state.time;
+          document.getElementById('summaryFood').textContent = state.foods.join('、');
+          setTimeout(() => showStep(5), 330);
+        }
+      }));
+    }());
+  </script>
+</body>
+</html>
